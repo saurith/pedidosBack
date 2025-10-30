@@ -12,6 +12,21 @@ menu = Blueprint('menu', __name__)
 def list():
     conn = db.conexion()
     cursor = conn.cursor(dictionary=True)
-    cursor.execute("select * from menu")
+    cursor.execute("SELECT * FROM menu ORDER BY father, id")
     rows = cursor.fetchall()
-    return rows 
+    
+    menu_items = {item['id']: item for item in rows}
+    
+    root_items = []
+    
+    for item in rows:
+        if item['father'] is 0:
+            root_items.append(item)
+        else:
+            parent = menu_items.get(item['father'])
+            if parent:
+                if 'items' not in parent:
+                    parent['items'] = []
+                parent['items'].append(item)
+                
+    return root_items
